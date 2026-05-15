@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>학술 연구 보고서: 엘리베이터 알고리즘 최적화 분석 - Google Docs</title>
+    <style>
+        /* 기존 스타일 유지 */
+        body {
+            background-color: #f9fbfd;
+            color: #333;
+            font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 10px;
+        }
+
+        #toolbar-container {
+            width: 95%;
+            max-width: 850px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            margin-bottom: 8px;
+        }
+        #menubar {
+            height: 30px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dadce0;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            font-size: 12px;
+            color: #5f6368;
+        }
+        #menubar div { margin-right: 14px; cursor: default; }
+        #title-bar {
+            height: 40px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            border-bottom: 1px solid #dadce0;
+        }
+        #title-bar strong { font-size: 15px; color: #202124; margin-right: 8px; }
+
+        #game-layout {
+            display: flex;
+            gap: 20px;
+            width: 95%;
+            max-width: 1100px;
+            align-items: flex-start;
+        }
+
+        #game-container {
+            background: #fff;
+            padding: 50px 70px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            flex: 1;
+            min-height: 900px;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .header-info { text-align: right; font-size: 11px; color: #888; margin-bottom: 30px; line-height: 1.6; }
+        #doc-title { font-size: 22px; font-weight: bold; color: #000; text-align: center; margin-bottom: 40px; text-decoration: underline; }
+        
+        .section-h2 { font-size: 15px; font-weight: bold; margin-bottom: 10px; color: #000; border-left: 4px solid #1a73e8; padding-left: 10px; }
+
+        /* 분석 데이터 테이블 */
+        #analysis-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px; }
+        #analysis-table td { border: 1px solid #ddd; padding: 8px 12px; }
+        .table-label { background-color: #f8f9fa; width: 35%; font-weight: bold; }
+
+        /* ★ 시간 강조 스타일 ★ */
+        .time-monitor {
+            background: #f1f3f4;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            padding: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .time-monitor-label { font-size: 11px; color: #5f6368; margin-bottom: 2px; }
+        #time-txt {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1a73e8;
+            font-family: 'Courier New', monospace;
+        }
+        #time-txt.urgent {
+            color: #ea4335;
+            animation: blink 0.5s infinite;
+        }
+        @keyframes blink { 
+            0% { opacity: 1; } 
+            50% { opacity: 0.3; } 
+            100% { opacity: 1; } 
+        }
+
+        /* HP 바 */
+        #hp-track { width: 100%; height: 8px; background: #eee; border-radius: 4px; overflow: hidden; }
+        #hp-fill { height: 100%; background: #4285f4; transition: width 0.3s ease; }
+        #hp-fill.low { background: #ea4335; }
+
+        .tabs { margin-bottom: 15px; text-align: center; }
+        .tab-btn { padding: 6px 15px; border: 1px solid #dadce0; background: #fff; cursor: pointer; font-size: 13px; border-radius: 4px; margin: 0 2px; }
+        .tab-btn.active { background: #e8f0fe; color: #1a73e8; font-weight: bold; border-color: #1a73e8; }
+
+        #target-word {
+            display: block; font-size: 24px; font-weight: bold; color: #1a73e8;
+            text-align: center; margin: 20px 0; padding: 20px; background: #f1f3f4; border-radius: 4px;
+        }
+        #input-word {
+            width: 100%; padding: 10px 0; font-size: 16px; border: none;
+            border-bottom: 2px solid #1a73e8; outline: none; background: transparent; text-align: center;
+        }
+
+        .upgrade-list { margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; }
+        .upgrade-item { display: flex; align-items: center; margin-bottom: 12px; background: #fcfcfc; padding: 8px; border-radius: 4px; }
+        .up-btn {
+            width: 35px; height: 35px; background: #1a73e8; color: white; border: none;
+            border-radius: 4px; font-weight: bold; cursor: pointer; margin-right: 15px;
+        }
+        .up-btn:disabled { background: #ccc; cursor: not-allowed; }
+        .up-info { font-size: 12px; flex: 1; }
+        .up-cost { color: #f29900; font-weight: bold; }
+
+        .side-panel { width: 250px; }
+        .ranking-card { background: #fff; padding: 15px; border: 1px solid #dadce0; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .rank-item { display: flex; justify-content: space-between; font-size: 12px; padding: 6px 0; border-bottom: 1px dashed #eee; }
+        .rank-name { font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100px; }
+        .rank-score { color: #1a73e8; font-weight: bold; }
+
+        #overlay {
+            position: fixed; inset: 0; background: rgba(255,255,255,0.98);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000;
+        }
+        .btn-main { padding: 12px 30px; background: #1a73e8; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 15px; }
+        .input-nick { padding: 10px; border: 1px solid #dadce0; border-radius: 4px; width: 200px; text-align: center; margin-top: 10px; }
+
+        .dmg-pop { position: fixed; font-weight: bold; pointer-events: none; color: #ea4335; animation: floatUp 0.8s ease-out forwards; z-index: 2000; }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-50px); } }
+
+        .tab-view { display: none; }
+        .tab-view.active { display: block; }
+    </style>
+</head>
+<body>
+
+<div id="toolbar-container">
+    <div id="menubar">
+        <div>파일</div><div>수정</div><div>보기</div><div>삽입</div><div>서식</div><div>도구</div>
+    </div>
+    <div id="title-bar">
+        <strong>학생 탐구 보고서_최종_수정(2).docx</strong>
+    </div>
+</div>
+
+<div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('game')">데이터 분석</button>
+    <button class="tab-btn" onclick="switchTab('ranking')">전역 랭킹 지표</button>
+</div>
+
+<div id="game-layout">
+    <div id="game-container">
+        <div class="header-info">
+            문서번호: SNU-2026-0415<br>
+            누적 데이터: <span id="gold-txt">0</span> kb
+        </div>
+
+        <div id="doc-title">확률 분포 기반 엘리베이터 사전 배치 최적화 모델 연구</div>
+
+        <div class="tab-view active" id="tab-game">
+            
+            <div class="time-monitor">
+                <div class="time-monitor-label">데이터 분석 세션 잔여 시간 (SEC)</div>
+                <div id="time-txt">30.00</div>
+            </div>
+
+            <div class="section-h2">1. 실시간 시뮬레이션 상태</div>
+            <table id="analysis-table">
+                <tr>
+                    <td class="table-label">분석 대상 단계</td>
+                    <td id="stage-txt">STAGE 1</td>
+                </tr>
+                <tr>
+                    <td class="table-label">프로세스 무결성</td>
+                    <td>
+                        <div id="hp-track"><div id="hp-fill" style="width:100%"></div></div>
+                        <div style="font-size:10px; color:#888; margin-top:4px;" id="hp-txt">10 / 10</div>
+                    </td>
+                </tr>
+            </table>
+
+            <div class="section-h2">2. 데이터 매칭 테스트</div>
+            <div id="target-word">준비하세요</div>
+            <input type="text" id="input-word" placeholder="위 키워드를 대조 입력하십시오." autocomplete="off" disabled>
+
+            <div class="upgrade-list">
+                <div class="section-h2" style="border:none; padding:0;">[부록] 시스템 성능 최적화 가중치</div>
+                
+                <div class="upgrade-item">
+                    <button class="up-btn" id="up-atk" onclick="buyUpgrade('atk')">↑</button>
+                    <div class="up-info">
+                        <strong>연산 가속 장치</strong> <span id="cur-atk">Lv.0</span><br>
+                        출력 가중치 +5 | 비용: <span class="up-cost" id="cost-atk">10kb</span>
+                    </div>
+                </div>
+
+                <div class="upgrade-item">
+                    <button class="up-btn" id="up-crit" onclick="buyUpgrade('crit')">↑</button>
+                    <div class="up-info">
+                        <strong>알고리즘 정밀도</strong> <span id="cur-crit">Lv.0</span><br>
+                        정밀 대조 확률 +5% | 비용: <span class="up-cost" id="cost-crit">15kb</span>
+                    </div>
+                </div>
+
+                <div class="upgrade-item">
+                    <button class="up-btn" id="up-time" onclick="buyUpgrade('time')">↑</button>
+                    <div class="up-info">
+                        <strong>세션 무결성 유지</strong> <span id="cur-time">Lv.0</span><br>
+                        분석 시간 10초 연장 | 비용: <span class="up-cost" id="cost-time">20kb</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-view" id="tab-ranking">
+            <div class="section-h2">전역 연구 데이터 랭킹 (Top 20)</div>
+            <div id="ranking-list-mobile">불러오는 중...</div>
+        </div>
+    </div>
+
+    <div class="side-panel">
+        <div class="ranking-card">
+            <div style="font-weight:bold; font-size:13px; margin-bottom:10px;">🏆 TOP 10 실시간 순위</div>
+            <div id="ranking-list">불러오는 중...</div>
+            <button class="btn-main" style="width:100%; font-size:11px; padding:5px; background:#f1f3f4; color:#666;" onclick="loadRanking()">지표 새로고침</button>
+        </div>
+    </div>
+</div>
+
+<div id="overlay">
+    <h2 id="ov-title" style="margin-bottom:5px;">연구 세션 시작</h2>
+    <p id="ov-desc" style="font-size:13px; color:#666;">데이터 시뮬레이션을 시작하려면 버튼을 누르십시오.</p>
+    <div id="ov-score" style="display:none; font-size:24px; font-weight:bold; color:#1a73e8; margin:10px 0;"></div>
+    <input type="text" class="input-nick" id="nick-input" placeholder="분석가 이름 입력" maxlength="10" style="display:none">
+    <button class="btn-main" id="ov-btn" onclick="overlayAction()">분석 시작</button>
+    <button id="ov-rank-btn" style="display:none; margin-top:10px; border:none; background:none; color:#1a73e8; cursor:pointer; font-size:12px;" onclick="switchTab('ranking');document.getElementById('overlay').style.display='none'">지표 확인</button>
+</div>
+
+<script>
+// ===== 기존 랭킹/게임 로직 절대 유지 =====
+const SUPABASE_URL = 'https://cqhysqfqslgwwdasktol.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_Xtji63oefclNOfgGtb8vjQ_cOJcY9pJ';
+const API = `${SUPABASE_URL}/rest/v1/rankings`;
+
+const words = [
+    "사과","바나나","호랑이","컴퓨터","우주","키보드","마법사","전사","몬스터","데이터",
+    "함수","파이썬","자바","성공","강화","골드","물약","사냥","레벨업","코딩",
+    "웹","게임","도전","인터넷","구름","태양","달빛","바다","파도","용사",
+    "마력","던전","전설","영웅","운명","미래","기억","희망","용기","지혜",
+    "진리","과학","철학","역사","문화","음악","예술","세계","우주선","행성",
+    "은하","블랙홀","자연","환경","기후","여름","겨울","도시","자동차","비행기",
+    "여행","행복","선형대수","확률분포","최적화","알고리즘","가중치","표준편차",
+    "기댓값","효율성","복잡도","시스템","변수","미분","적분","시뮬레이션"
+];
+
+let gold = 0, stage = 1, timeLeft = 30, isPlaying = false, timer = null;
+let playerAtk = 10, playerCrit = 5;
+let atkCost = 10, critCost = 15, timeCost = 20;
+let atkLv = 0, critLv = 0, timeLv = 0;
+let monsterMaxHp = 10, monsterHp = 10;
+let isComposing = false;
+let gameState = 'start';
+
+const inputEl = document.getElementById('input-word');
+const targetEl = document.getElementById('target-word');
+const hpFill = document.getElementById('hp-fill');
+const overlay = document.getElementById('overlay');
+const timeTxt = document.getElementById('time-txt');
+
+function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach((b) => b.classList.toggle('active', (tab === 'game' && b.innerText === '데이터 분석') || (tab === 'ranking' && b.innerText === '전역 랭킹 지표')));
+    document.getElementById('tab-game').classList.toggle('active', tab==='game');
+    document.getElementById('tab-ranking').classList.toggle('active', tab==='ranking');
+    if(tab==='ranking') loadRankingMobile();
+}
+
+function overlayAction() {
+    if(gameState === 'start') startGame();
+    else if(gameState === 'gameover') {
+        const nick = document.getElementById('nick-input').value.trim();
+        if(!nick) { alert('분석가 이름을 입력하세요!'); return; }
+        saveScore(nick, stage);
+    }
+}
+
+function startGame() {
+    overlay.style.display = 'none';
+    gameState = 'playing'; isPlaying = true;
+    gold = 0; stage = 1; timeLeft = 30;
+    playerAtk = 10; playerCrit = 5;
+    atkCost = 10; critCost = 15; timeCost = 20;
+    atkLv = 0; critLv = 0; timeLv = 0;
+    inputEl.disabled = false; inputEl.value = '';
+    setTimeout(() => inputEl.focus(), 50);
+    updateStats(); spawnMonster();
+    clearInterval(timer);
+    timer = setInterval(() => {
+        if(timeLeft > 0) {
+            timeLeft--;
+            timeTxt.textContent = timeLeft;
+            // 10초 이하 긴급 연출
+            if(timeLeft <= 10) timeTxt.classList.add('urgent');
+            else timeTxt.classList.remove('urgent');
+        } else endGame();
+    }, 1000);
+}
+
+function spawnMonster() {
+    monsterMaxHp = Math.floor(10 * Math.pow(1.28, stage));
+    monsterHp = monsterMaxHp;
+    document.getElementById('stage-txt').textContent = `STAGE ${stage}`;
+    updateHp(); setNextWord();
+}
+
+function updateHp() {
+    const pct = Math.max(0, (monsterHp / monsterMaxHp) * 100);
+    hpFill.style.width = pct + '%';
+    hpFill.className = (pct < 30 ? 'low' : '');
+    document.getElementById('hp-txt').textContent = `${Math.max(0,monsterHp)} / ${monsterMaxHp}`;
+}
+
+function setNextWord() {
+    targetEl.textContent = words[Math.floor(Math.random() * words.length)];
+    inputEl.value = '';
+}
+
+inputEl.addEventListener('compositionstart', () => { isComposing = true; });
+inputEl.addEventListener('compositionend', () => {
+    isComposing = false;
+    if(inputEl.value.trim() === targetEl.textContent) handleSuccess();
+});
+inputEl.addEventListener('input', () => {
+    if(isPlaying && !isComposing && inputEl.value.trim() === targetEl.textContent) handleSuccess();
+});
+
+function handleSuccess() {
+    inputEl.value = '';
+    let dmg = playerAtk;
+    let isCrit = Math.random() * 100 < playerCrit;
+    if(isCrit) dmg *= 2;
+    showDmg(dmg, isCrit);
+    monsterHp -= dmg;
+    if(monsterHp <= 0) {
+        gold += Math.floor(8 * (1 + stage * 0.15));
+        stage++;
+        timeLeft = Math.min(60, timeLeft + 4);
+        spawnMonster();
+    } else {
+        updateHp(); setNextWord();
+    }
+    updateStats();
+}
+
+function showDmg(dmg, crit) {
+    const el = document.createElement('div');
+    el.className = 'dmg-pop';
+    el.textContent = (crit ? '!! ' : '') + '-' + dmg;
+    el.style.left = (window.innerWidth/2) + 'px';
+    el.style.top = '40%';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 800);
+}
+
+function buyUpgrade(type) {
+    if(type === 'atk' && gold >= atkCost) { gold -= atkCost; playerAtk += 5; atkLv++; atkCost = Math.floor(atkCost * 1.6); }
+    if(type === 'crit' && gold >= critCost) { gold -= critCost; playerCrit = Math.min(50, playerCrit + 5); critLv++; critCost = Math.floor(critCost * 1.8); }
+    if(type === 'time' && gold >= timeCost) { 
+        gold -= timeCost; timeLeft += 10; timeLv++; timeCost = Math.floor(timeCost * 1.5);
+        timeTxt.textContent = timeLeft;
+    }
+    updateStats(); inputEl.focus();
+}
+
+function updateStats() {
+    document.getElementById('gold-txt').textContent = gold;
+    document.getElementById('cur-atk').textContent = `Lv.${atkLv}`;
+    document.getElementById('cost-atk').textContent = atkCost + 'kb';
+    document.getElementById('cur-crit').textContent = `Lv.${critLv}`;
+    document.getElementById('cost-crit').textContent = critCost + 'kb';
+    document.getElementById('cur-time').textContent = `Lv.${timeLv}`;
+    document.getElementById('cost-time').textContent = timeCost + 'kb';
+    document.getElementById('up-atk').disabled = gold < atkCost;
+    document.getElementById('up-crit').disabled = gold < critCost;
+    document.getElementById('up-time').disabled = gold < timeCost;
+}
+
+function endGame() {
+    isPlaying = false; gameState = 'gameover';
+    clearInterval(timer); inputEl.disabled = true;
+    timeTxt.classList.remove('urgent');
+    document.getElementById('ov-title').textContent = '분석 세션 종료';
+    document.getElementById('ov-desc').textContent = '수행된 분석 결과 데이터를 서버로 전송하십시오.';
+    document.getElementById('ov-score').style.display = 'block';
+    document.getElementById('ov-score').textContent = `분석 단계: ${stage}`;
+    document.getElementById('nick-input').style.display = 'block';
+    document.getElementById('ov-btn').textContent = '데이터 전송 & 재시작';
+    document.getElementById('ov-rank-btn').style.display = 'block';
+    overlay.style.display = 'flex';
+}
+
+async function saveScore(nickname, finalStage) {
+    try {
+        await fetch(API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` },
+            body: JSON.stringify({ nickname, stage: finalStage })
+        });
+        loadRanking();
+    } catch(e) { console.error(e); }
+    
+    document.getElementById('ov-title').textContent = '연구 세션 시작';
+    document.getElementById('ov-score').style.display = 'none';
+    document.getElementById('nick-input').style.display = 'none';
+    document.getElementById('ov-btn').textContent = '분석 시작';
+    document.getElementById('ov-rank-btn').style.display = 'none';
+    gameState = 'start'; startGame();
+}
+
+async function loadRanking() {
+    try {
+        const res = await fetch(`${API}?order=stage.desc&limit=10`, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
+        const data = await res.json();
+        renderRanking(data, 'ranking-list');
+    } catch(e) { document.getElementById('ranking-list').innerHTML = '로딩 실패'; }
+}
+
+async function loadRankingMobile() {
+    try {
+        const res = await fetch(`${API}?order=stage.desc&limit=20`, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
+        const data = await res.json();
+        renderRanking(data, 'ranking-list-mobile');
+    } catch(e) { document.getElementById('ranking-list-mobile').innerHTML = '로딩 실패'; }
+}
+
+function renderRanking(data, targetId) {
+    const el = document.getElementById(targetId);
+    if(!data || data.length === 0) { el.innerHTML = '기록 없음'; return; }
+    el.innerHTML = data.map((r, i) => `
+        <div class="rank-item">
+            <span style="width:20px">${i+1}.</span>
+            <span class="rank-name">${r.nickname}</span>
+            <span class="rank-score">Lv.${r.stage}</span>
+        </div>
+    `).join('');
+}
+
+window.onload = () => { overlay.style.display = 'flex'; loadRanking(); };
+</script>
+</body>
+</html>
