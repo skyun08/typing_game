@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>학술 연구 보고서: 엘리베이터 알고리즘 최적화 분석 - Google Docs</title>
     <style>
-        /* 기존 스타일 유지 */
         body {
             background-color: #f9fbfd;
             color: #333;
@@ -68,19 +67,17 @@
         
         .section-h2 { font-size: 15px; font-weight: bold; margin-bottom: 10px; color: #000; border-left: 4px solid #1a73e8; padding-left: 10px; }
 
-        /* 분석 데이터 테이블 */
-        #analysis-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px; }
-        #analysis-table td { border: 1px solid #ddd; padding: 8px 12px; }
-        .table-label { background-color: #f8f9fa; width: 35%; font-weight: bold; }
-
-        /* ★ 시간 강조 스타일 ★ */
+        /* ★ 통합 모니터링 스타일 ★ */
         .time-monitor {
             background: #f1f3f4;
             border: 1px solid #dadce0;
             border-radius: 4px;
-            padding: 10px;
-            text-align: center;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 15px;
             margin-bottom: 20px;
+            text-align: center;
         }
         .time-monitor-label { font-size: 11px; color: #5f6368; margin-bottom: 2px; }
         #time-txt {
@@ -89,17 +86,16 @@
             color: #1a73e8;
             font-family: 'Courier New', monospace;
         }
-        #time-txt.urgent {
-            color: #ea4335;
-            animation: blink 0.5s infinite;
+        #gold-txt-top {
+            font-size: 28px;
+            font-weight: bold;
+            color: #f29900;
+            font-family: 'Courier New', monospace;
         }
-        @keyframes blink { 
-            0% { opacity: 1; } 
-            50% { opacity: 0.3; } 
-            100% { opacity: 1; } 
-        }
+        #time-txt.urgent { color: #ea4335; animation: blink 0.5s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
 
-        /* HP 바 */
+        /* HP 및 기타 UI */
         #hp-track { width: 100%; height: 8px; background: #eee; border-radius: 4px; overflow: hidden; }
         #hp-fill { height: 100%; background: #4285f4; transition: width 0.3s ease; }
         #hp-fill.low { background: #ea4335; }
@@ -127,12 +123,6 @@
         .up-info { font-size: 12px; flex: 1; }
         .up-cost { color: #f29900; font-weight: bold; }
 
-        .side-panel { width: 250px; }
-        .ranking-card { background: #fff; padding: 15px; border: 1px solid #dadce0; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-        .rank-item { display: flex; justify-content: space-between; font-size: 12px; padding: 6px 0; border-bottom: 1px dashed #eee; }
-        .rank-name { font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100px; }
-        .rank-score { color: #1a73e8; font-weight: bold; }
-
         #overlay {
             position: fixed; inset: 0; background: rgba(255,255,255,0.98);
             display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000;
@@ -145,6 +135,14 @@
 
         .tab-view { display: none; }
         .tab-view.active { display: block; }
+
+        #analysis-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px; }
+        #analysis-table td { border: 1px solid #ddd; padding: 8px 12px; }
+        .table-label { background-color: #f8f9fa; width: 35%; font-weight: bold; }
+
+        .rank-item { display: flex; justify-content: space-between; font-size: 12px; padding: 6px 0; border-bottom: 1px dashed #eee; }
+        .rank-name { font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100px; }
+        .rank-score { color: #1a73e8; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -173,10 +171,15 @@
         <div id="doc-title">확률 분포 기반 엘리베이터 사전 배치 최적화 모델 연구</div>
 
         <div class="tab-view active" id="tab-game">
-            
             <div class="time-monitor">
-                <div class="time-monitor-label">데이터 분석 세션 잔여 시간 (SEC)</div>
-                <div id="time-txt">30.00</div>
+                <div style="flex: 1; border-right: 1px solid #dadce0;">
+                    <div class="time-monitor-label">세션 잔여 시간 (SEC)</div>
+                    <div id="time-txt">30.00</div>
+                </div>
+                <div style="flex: 1;">
+                    <div class="time-monitor-label">확보된 데이터량 (KB)</div>
+                    <div id="gold-txt-top">0</div>
+                </div>
             </div>
 
             <div class="section-h2">1. 실시간 시뮬레이션 상태</div>
@@ -200,29 +203,17 @@
 
             <div class="upgrade-list">
                 <div class="section-h2" style="border:none; padding:0;">[부록] 시스템 성능 최적화 가중치</div>
-                
                 <div class="upgrade-item">
                     <button class="up-btn" id="up-atk" onclick="buyUpgrade('atk')">↑</button>
-                    <div class="up-info">
-                        <strong>연산 가속 장치</strong> <span id="cur-atk">Lv.0</span><br>
-                        출력 가중치 +5 | 비용: <span class="up-cost" id="cost-atk">10kb</span>
-                    </div>
+                    <div class="up-info"><strong>연산 가속 장치</strong> <span id="cur-atk">Lv.0</span><br>출력 가중치 +5 | 비용: <span class="up-cost" id="cost-atk">10kb</span></div>
                 </div>
-
                 <div class="upgrade-item">
                     <button class="up-btn" id="up-crit" onclick="buyUpgrade('crit')">↑</button>
-                    <div class="up-info">
-                        <strong>알고리즘 정밀도</strong> <span id="cur-crit">Lv.0</span><br>
-                        정밀 대조 확률 +5% | 비용: <span class="up-cost" id="cost-crit">15kb</span>
-                    </div>
+                    <div class="up-info"><strong>알고리즘 정밀도</strong> <span id="cur-crit">Lv.0</span><br>정밀 대조 확률 +5% | 비용: <span class="up-cost" id="cost-crit">15kb</span></div>
                 </div>
-
                 <div class="upgrade-item">
                     <button class="up-btn" id="up-time" onclick="buyUpgrade('time')">↑</button>
-                    <div class="up-info">
-                        <strong>세션 무결성 유지</strong> <span id="cur-time">Lv.0</span><br>
-                        분석 시간 10초 연장 | 비용: <span class="up-cost" id="cost-time">20kb</span>
-                    </div>
+                    <div class="up-info"><strong>세션 무결성 유지</strong> <span id="cur-time">Lv.0</span><br>분석 시간 10초 연장 | 비용: <span class="up-cost" id="cost-time">20kb</span></div>
                 </div>
             </div>
         </div>
@@ -233,8 +224,8 @@
         </div>
     </div>
 
-    <div class="side-panel">
-        <div class="ranking-card">
+    <div style="width: 250px;">
+        <div style="background:#fff; padding:15px; border:1px solid #dadce0; border-radius:4px;">
             <div style="font-weight:bold; font-size:13px; margin-bottom:10px;">🏆 TOP 10 실시간 순위</div>
             <div id="ranking-list">불러오는 중...</div>
             <button class="btn-main" style="width:100%; font-size:11px; padding:5px; background:#f1f3f4; color:#666;" onclick="loadRanking()">지표 새로고침</button>
@@ -243,7 +234,7 @@
 </div>
 
 <div id="overlay">
-    <h2 id="ov-title" style="margin-bottom:5px;">연구 세션 시작</h2>
+    <h2 id="ov-title">연구 세션 시작</h2>
     <p id="ov-desc" style="font-size:13px; color:#666;">데이터 시뮬레이션을 시작하려면 버튼을 누르십시오.</p>
     <div id="ov-score" style="display:none; font-size:24px; font-weight:bold; color:#1a73e8; margin:10px 0;"></div>
     <input type="text" class="input-nick" id="nick-input" placeholder="분석가 이름 입력" maxlength="10" style="display:none">
@@ -252,11 +243,11 @@
 </div>
 
 <script>
-// ===== 기존 랭킹/게임 로직 절대 유지 =====
 const SUPABASE_URL = 'https://cqhysqfqslgwwdasktol.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_Xtji63oefclNOfgGtb8vjQ_cOJcY9pJ';
 const API = `${SUPABASE_URL}/rest/v1/rankings`;
 
+// 여기에 단어를 마음껏 추가하세요!
 const words = [
     "사과","바나나","호랑이","컴퓨터","우주","키보드","마법사","전사","몬스터","데이터",
     "함수","파이썬","자바","성공","강화","골드","물약","사냥","레벨업","코딩",
@@ -265,7 +256,10 @@ const words = [
     "진리","과학","철학","역사","문화","음악","예술","세계","우주선","행성",
     "은하","블랙홀","자연","환경","기후","여름","겨울","도시","자동차","비행기",
     "여행","행복","선형대수","확률분포","최적화","알고리즘","가중치","표준편차",
-    "기댓값","효율성","복잡도","시스템","변수","미분","적분","시뮬레이션"
+    "기댓값","효율성","복잡도","시스템","변수","미분","적분","시뮬레이션", 
+    "선형동차연립방정식", "선형독립", "선형종속", "디스플레이", "양자점", "신케인스주의학파", 
+    "초코파르페", "최강아이티", "아잉", "청자양인각연당초모란문은입사동경", "데옥시리보핵산다항식합성효소",
+    "행간소사다리꼴", "부동산소유권이전등기등에관한특별조치법", "원핫인코딩"
 ];
 
 let gold = 0, stage = 1, timeLeft = 30, isPlaying = false, timer = null;
@@ -313,7 +307,6 @@ function startGame() {
         if(timeLeft > 0) {
             timeLeft--;
             timeTxt.textContent = timeLeft;
-            // 10초 이하 긴급 연출
             if(timeLeft <= 10) timeTxt.classList.add('urgent');
             else timeTxt.classList.remove('urgent');
         } else endGame();
@@ -351,9 +344,7 @@ inputEl.addEventListener('input', () => {
 function handleSuccess() {
     inputEl.value = '';
     let dmg = playerAtk;
-    let isCrit = Math.random() * 100 < playerCrit;
-    if(isCrit) dmg *= 2;
-    showDmg(dmg, isCrit);
+    if(Math.random() * 100 < playerCrit) dmg *= 2;
     monsterHp -= dmg;
     if(monsterHp <= 0) {
         gold += Math.floor(8 * (1 + stage * 0.15));
@@ -366,28 +357,18 @@ function handleSuccess() {
     updateStats();
 }
 
-function showDmg(dmg, crit) {
-    const el = document.createElement('div');
-    el.className = 'dmg-pop';
-    el.textContent = (crit ? '!! ' : '') + '-' + dmg;
-    el.style.left = (window.innerWidth/2) + 'px';
-    el.style.top = '40%';
-    document.body.appendChild(el);
-    setTimeout(() => el.remove(), 800);
-}
-
 function buyUpgrade(type) {
     if(type === 'atk' && gold >= atkCost) { gold -= atkCost; playerAtk += 5; atkLv++; atkCost = Math.floor(atkCost * 1.6); }
     if(type === 'crit' && gold >= critCost) { gold -= critCost; playerCrit = Math.min(50, playerCrit + 5); critLv++; critCost = Math.floor(critCost * 1.8); }
-    if(type === 'time' && gold >= timeCost) { 
-        gold -= timeCost; timeLeft += 10; timeLv++; timeCost = Math.floor(timeCost * 1.5);
-        timeTxt.textContent = timeLeft;
-    }
+    if(type === 'time' && gold >= timeCost) { gold -= timeCost; timeLeft += 10; timeLv++; timeCost = Math.floor(timeCost * 1.5); }
     updateStats(); inputEl.focus();
 }
 
 function updateStats() {
-    document.getElementById('gold-txt').textContent = gold;
+    const g1 = document.getElementById('gold-txt');
+    const g2 = document.getElementById('gold-txt-top');
+    if(g1) g1.textContent = gold;
+    if(g2) g2.textContent = gold;
     document.getElementById('cur-atk').textContent = `Lv.${atkLv}`;
     document.getElementById('cost-atk').textContent = atkCost + 'kb';
     document.getElementById('cur-crit').textContent = `Lv.${critLv}`;
@@ -402,15 +383,13 @@ function updateStats() {
 function endGame() {
     isPlaying = false; gameState = 'gameover';
     clearInterval(timer); inputEl.disabled = true;
-    timeTxt.classList.remove('urgent');
+    overlay.style.display = 'flex';
     document.getElementById('ov-title').textContent = '분석 세션 종료';
-    document.getElementById('ov-desc').textContent = '수행된 분석 결과 데이터를 서버로 전송하십시오.';
     document.getElementById('ov-score').style.display = 'block';
     document.getElementById('ov-score').textContent = `분석 단계: ${stage}`;
     document.getElementById('nick-input').style.display = 'block';
     document.getElementById('ov-btn').textContent = '데이터 전송 & 재시작';
     document.getElementById('ov-rank-btn').style.display = 'block';
-    overlay.style.display = 'flex';
 }
 
 async function saveScore(nickname, finalStage) {
@@ -421,45 +400,29 @@ async function saveScore(nickname, finalStage) {
             body: JSON.stringify({ nickname, stage: finalStage })
         });
         loadRanking();
-    } catch(e) { console.error(e); }
-    
-    document.getElementById('ov-title').textContent = '연구 세션 시작';
-    document.getElementById('ov-score').style.display = 'none';
-    document.getElementById('nick-input').style.display = 'none';
-    document.getElementById('ov-btn').textContent = '분석 시작';
-    document.getElementById('ov-rank-btn').style.display = 'none';
-    gameState = 'start'; startGame();
+    } catch(e) {}
+    location.reload(); // 깔끔하게 재시작
 }
 
 async function loadRanking() {
     try {
         const res = await fetch(`${API}?order=stage.desc&limit=10`, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
         const data = await res.json();
-        renderRanking(data, 'ranking-list');
-    } catch(e) { document.getElementById('ranking-list').innerHTML = '로딩 실패'; }
+        const el = document.getElementById('ranking-list');
+        el.innerHTML = data.map((r, i) => `<div class="rank-item"><span>${i+1}. ${r.nickname}</span><span class="rank-score">Lv.${r.stage}</span></div>`).join('');
+    } catch(e) { }
 }
 
 async function loadRankingMobile() {
     try {
         const res = await fetch(`${API}?order=stage.desc&limit=20`, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
         const data = await res.json();
-        renderRanking(data, 'ranking-list-mobile');
-    } catch(e) { document.getElementById('ranking-list-mobile').innerHTML = '로딩 실패'; }
+        const el = document.getElementById('ranking-list-mobile');
+        el.innerHTML = data.map((r, i) => `<div class="rank-item"><span>${i+1}. ${r.nickname}</span><span class="rank-score">Lv.${r.stage}</span></div>`).join('');
+    } catch(e) { }
 }
 
-function renderRanking(data, targetId) {
-    const el = document.getElementById(targetId);
-    if(!data || data.length === 0) { el.innerHTML = '기록 없음'; return; }
-    el.innerHTML = data.map((r, i) => `
-        <div class="rank-item">
-            <span style="width:20px">${i+1}.</span>
-            <span class="rank-name">${r.nickname}</span>
-            <span class="rank-score">Lv.${r.stage}</span>
-        </div>
-    `).join('');
-}
-
-window.onload = () => { overlay.style.display = 'flex'; loadRanking(); };
+window.onload = () => { loadRanking(); };
 </script>
 </body>
 </html>
